@@ -1,10 +1,4 @@
-﻿//-------------------------------------------------------------------------
-// <copyright file="Program.cs" company="Universidad Católica del Uruguay">
-// Copyright (c) Programación II. Derechos reservados.
-// </copyright>
-//-------------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,18 +6,17 @@ namespace Full_GRASP_And_SOLID
 {
     public class Program
     {
-        private static List<Product> productCatalog = new List<Product>();
-
-        private static List<Equipment> equipmentCatalog = new List<Equipment>();
+        private static ICatalog<Product> productCatalog = new ProductCatalog();
+        private static ICatalog<Equipment> equipmentCatalog = new EquipmentCatalog();
 
         public static void Main(string[] args)
         {
             PopulateCatalogs();
 
             Recipe recipe = new Recipe();
-            recipe.FinalProduct = GetProduct("Café con leche");
-            recipe.AddStep(new Step(GetProduct("Café"), 100, GetEquipment("Cafetera"), 120));
-            recipe.AddStep(new Step(GetProduct("Leche"), 200, GetEquipment("Hervidor"), 60));
+            recipe.FinalProduct = productCatalog.GetItem("Café con leche");
+            recipe.AddStep(new Step(productCatalog.GetItem("Café"), 100, equipmentCatalog.GetItem("Cafetera"), 120));
+            recipe.AddStep(new Step(productCatalog.GetItem("Leche"), 200, equipmentCatalog.GetItem("Hervidor"), 60));
 
             IPrinter printer;
             printer = new ConsolePrinter();
@@ -34,44 +27,32 @@ namespace Full_GRASP_And_SOLID
 
         private static void PopulateCatalogs()
         {
-            AddProductToCatalog("Café", 100);
-            AddProductToCatalog("Leche", 200);
-            AddProductToCatalog("Café con leche", 300);
+            productCatalog.AddItem(new Product("Café", 100));
+            productCatalog.AddItem(new Product("Leche", 200));
+            productCatalog.AddItem(new Product("Café con leche", 300));
 
-            AddEquipmentToCatalog("Cafetera", 1000);
-            AddEquipmentToCatalog("Hervidor", 2000);
-        }
-
-        private static void AddProductToCatalog(string description, double unitCost)
-        {
-            productCatalog.Add(new Product(description, unitCost));
-        }
-
-        private static void AddEquipmentToCatalog(string description, double hourlyCost)
-        {
-            equipmentCatalog.Add(new Equipment(description, hourlyCost));
-        }
-
-        private static Product ProductAt(int index)
-        {
-            return productCatalog[index] as Product;
-        }
-
-        private static Equipment EquipmentAt(int index)
-        {
-            return equipmentCatalog[index] as Equipment;
-        }
-
-        private static Product GetProduct(string description)
-        {
-            var query = from Product product in productCatalog where product.Description == description select product;
-            return query.FirstOrDefault();
-        }
-
-        private static Equipment GetEquipment(string description)
-        {
-            var query = from Equipment equipment in equipmentCatalog where equipment.Description == description select equipment;
-            return query.FirstOrDefault();
+            equipmentCatalog.AddItem(new Equipment("Cafetera", 1000));
+            equipmentCatalog.AddItem(new Equipment("Hervidor", 2000));
         }
     }
 }
+
+/* 
+Se agregó una nueva interfaz llamada ICatalog<T> que define los métodos AddItem y GetItem.
+
+Se implementó la clase ProductCatalog que ahora utiliza la interfaz ICatalog<Product>. La clase ProductCatalog tiene una lista de productos y 
+proporciona la funcionalidad para agregar productos y buscar productos por descripción.
+
+Se implementó la clase EquipmentCatalog que también utiliza la interfaz ICatalog<Equipment>. La clase EquipmentCatalog tiene una lista de 
+equipos y proporciona la funcionalidad para agregar equipos y buscar equipos por descripción.
+
+En la clase Program, se modificó la declaración de las variables productCatalog y equipmentCatalog para que ahora sean ICatalog<Product> 
+y ICatalog<Equipment>.
+
+Se actualizó el método PopulateCatalogs en la clase Program para utilizar los métodos AddItem de los catálogos en lugar de acceder directamente 
+a las listas internas.
+
+Con estos cambios, se ha aplicado el patrón Creator en los catálogos de productos y equipos, esto permite que podamos utilizar los catálogos a
+través de la interfaz genérica sin depender directamente de las implementaciones concretas.
+*/
+
